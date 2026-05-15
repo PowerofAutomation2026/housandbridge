@@ -1,0 +1,479 @@
+swagger: "2.0"
+info:
+  title: Cisco ThousandEyes
+  description: Custom connector for ThousandEyes API v7. LAB uses Basic auth (password=token, works with on-prem gateway). PROD uses API Key in Authorization header. Built by Kerolos.
+  version: "1.0"
+  contact:
+    name: Power of Automation
+    url: https://powerofautomation2025.blogspot.com
+host: REPLACE-WITH-YOUR-HOST
+basePath: /v7
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  basic_auth:
+    type: basic
+    description: LAB - Username any value, Password is your bearer token from simulator banner.
+security:
+  - basic_auth: []
+paths:
+  /account-groups:
+    get:
+      summary: List account groups
+      operationId: ListAccountGroups
+      tags: [Account Groups]
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/AccountGroupList"}}
+  /users/current:
+    get:
+      summary: Get current user
+      operationId: GetCurrentUser
+      tags: [Users]
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/User"}}
+  /agents:
+    get:
+      summary: List agents
+      operationId: ListAgents
+      tags: [Agents]
+      parameters:
+        - {name: agentTypes, in: query, required: false, type: string}
+        - {name: aid, in: query, required: false, type: string}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/AgentList"}}
+  /agents/{agentId}:
+    get:
+      summary: Get agent by ID
+      operationId: GetAgent
+      tags: [Agents]
+      parameters:
+        - {name: agentId, in: path, required: true, type: string}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/Agent"}}
+  /tests:
+    get:
+      summary: List all tests
+      operationId: ListAllTests
+      tags: [Tests]
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/TestList"}}
+  /tests/{type}:
+    get:
+      summary: List tests by type
+      operationId: ListTestsByType
+      tags: [Tests]
+      parameters:
+        - {name: type, in: path, required: true, type: string}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/TestList"}}
+    post:
+      summary: Create a new test
+      operationId: CreateTest
+      tags: [Tests]
+      parameters:
+        - {name: type, in: path, required: true, type: string}
+        - {name: body, in: body, required: true, schema: {$ref: "#/definitions/CreateTestRequest"}}
+      responses:
+        "201": {description: Created, schema: {$ref: "#/definitions/Test"}}
+  /tests/{type}/{testId}:
+    get:
+      summary: Get test by ID
+      operationId: GetTest
+      tags: [Tests]
+      parameters:
+        - {name: type, in: path, required: true, type: string}
+        - {name: testId, in: path, required: true, type: string}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/Test"}}
+    put:
+      summary: Update a test
+      operationId: UpdateTest
+      tags: [Tests]
+      parameters:
+        - {name: type, in: path, required: true, type: string}
+        - {name: testId, in: path, required: true, type: string}
+        - {name: body, in: body, required: true, schema: {$ref: "#/definitions/CreateTestRequest"}}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/Test"}}
+    delete:
+      summary: Delete a test
+      operationId: DeleteTest
+      tags: [Tests]
+      parameters:
+        - {name: type, in: path, required: true, type: string}
+        - {name: testId, in: path, required: true, type: string}
+      responses:
+        "204": {description: Deleted}
+  /tests/{type}/instant:
+    post:
+      summary: Run an instant test
+      operationId: RunInstantTest
+      tags: [Tests]
+      parameters:
+        - {name: type, in: path, required: true, type: string}
+        - {name: body, in: body, required: true, schema: {$ref: "#/definitions/CreateTestRequest"}}
+      responses:
+        "201": {description: Created, schema: {$ref: "#/definitions/Test"}}
+  /test-results/{testId}/network:
+    get:
+      summary: Get network test results
+      operationId: GetNetworkTestResults
+      tags: [Test Results]
+      parameters:
+        - {name: testId, in: path, required: true, type: string}
+        - {name: window, in: query, required: false, type: string, default: "60m"}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/NetworkResultsResponse"}}
+  /test-results/{testId}/http-server:
+    get:
+      summary: Get HTTP test results
+      operationId: GetHttpTestResults
+      tags: [Test Results]
+      parameters:
+        - {name: testId, in: path, required: true, type: string}
+        - {name: window, in: query, required: false, type: string, default: "60m"}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/HttpResultsResponse"}}
+  /test-results/{testId}/path-vis:
+    get:
+      summary: Get path visualization
+      operationId: GetPathVisualization
+      tags: [Test Results]
+      parameters:
+        - {name: testId, in: path, required: true, type: string}
+      responses:
+        "200": {description: Success, schema: {type: object}}
+  /alerts:
+    get:
+      summary: List alerts
+      operationId: ListAlerts
+      tags: [Alerts]
+      parameters:
+        - {name: state, in: query, required: false, type: string, default: "active"}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/AlertList"}}
+  /alerts/{alertId}:
+    get:
+      summary: Get alert
+      operationId: GetAlert
+      tags: [Alerts]
+      parameters:
+        - {name: alertId, in: path, required: true, type: string}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/Alert"}}
+  /alerts/rules:
+    get:
+      summary: List alert rules
+      operationId: ListAlertRules
+      tags: [Alert Rules]
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/AlertRuleList"}}
+    post:
+      summary: Create alert rule
+      operationId: CreateAlertRule
+      tags: [Alert Rules]
+      parameters:
+        - {name: body, in: body, required: true, schema: {$ref: "#/definitions/AlertRule"}}
+      responses:
+        "201": {description: Created, schema: {$ref: "#/definitions/AlertRule"}}
+  /alerts/rules/{ruleId}:
+    get:
+      summary: Get alert rule
+      operationId: GetAlertRule
+      tags: [Alert Rules]
+      parameters:
+        - {name: ruleId, in: path, required: true, type: string}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/AlertRule"}}
+    delete:
+      summary: Delete alert rule
+      operationId: DeleteAlertRule
+      tags: [Alert Rules]
+      parameters:
+        - {name: ruleId, in: path, required: true, type: string}
+      responses:
+        "204": {description: Deleted}
+  /alerts/suppression-windows:
+    get:
+      summary: List suppression windows
+      operationId: ListSuppressionWindows
+      tags: [Suppression Windows]
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/SuppressionWindowList"}}
+    post:
+      summary: Create suppression window
+      operationId: CreateSuppressionWindow
+      tags: [Suppression Windows]
+      parameters:
+        - {name: body, in: body, required: true, schema: {$ref: "#/definitions/SuppressionWindow"}}
+      responses:
+        "201": {description: Created, schema: {$ref: "#/definitions/SuppressionWindow"}}
+  /dashboards:
+    get:
+      summary: List dashboards
+      operationId: ListDashboards
+      tags: [Dashboards]
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/DashboardList"}}
+  /dashboards/{dashboardId}:
+    get:
+      summary: Get dashboard
+      operationId: GetDashboard
+      tags: [Dashboards]
+      parameters:
+        - {name: dashboardId, in: path, required: true, type: string}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/Dashboard"}}
+  /internet-insights/catalog-providers:
+    get:
+      summary: List catalog providers
+      operationId: ListCatalogProviders
+      tags: [Internet Insights]
+      responses:
+        "200": {description: Success, schema: {type: object}}
+  /internet-insights/outages/filter:
+    post:
+      summary: Filter outages
+      operationId: FilterOutages
+      tags: [Internet Insights]
+      parameters:
+        - {name: body, in: body, required: false, schema: {type: object, properties: {outageType: {type: string}}}}
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/OutagesResponse"}}
+  /bgp-monitors:
+    get:
+      summary: List BGP monitors
+      operationId: ListBgpMonitors
+      tags: [BGP Monitors]
+      responses:
+        "200": {description: Success, schema: {type: object}}
+  /usage:
+    get:
+      summary: Get usage
+      operationId: GetUsage
+      tags: [Usage]
+      responses:
+        "200": {description: Success, schema: {$ref: "#/definitions/UsageResponse"}}
+  /tags:
+    get:
+      summary: List tags
+      operationId: ListTags
+      tags: [Tags]
+      responses:
+        "200": {description: Success, schema: {type: object}}
+  /integrations/webhook-operations:
+    get:
+      summary: List webhook operations
+      operationId: ListWebhookOperations
+      tags: [Integrations]
+      responses:
+        "200": {description: Success, schema: {type: object}}
+
+definitions:
+  AccountGroup:
+    type: object
+    properties:
+      aid: {type: string}
+      accountGroupName: {type: string}
+      organizationName: {type: string}
+      isCurrentAccountGroup: {type: boolean}
+      isDefaultAccountGroup: {type: boolean}
+  AccountGroupList:
+    type: object
+    properties:
+      accountGroups:
+        type: array
+        items: {$ref: "#/definitions/AccountGroup"}
+  User:
+    type: object
+    properties:
+      uid: {type: string}
+      name: {type: string}
+      email: {type: string}
+  Agent:
+    type: object
+    properties:
+      agentId: {type: string}
+      agentName: {type: string}
+      agentType: {type: string}
+      countryId: {type: string}
+      location: {type: string}
+      enabled: {type: boolean}
+      ipAddresses: {type: array, items: {type: string}}
+  AgentList:
+    type: object
+    properties:
+      agents:
+        type: array
+        items: {$ref: "#/definitions/Agent"}
+  Test:
+    type: object
+    properties:
+      testId: {type: string}
+      testName: {type: string}
+      type: {type: string}
+      interval: {type: integer}
+      enabled: {type: boolean}
+      alertsEnabled: {type: boolean}
+      server: {type: string}
+      url: {type: string}
+      description: {type: string}
+      createdDate: {type: string}
+      modifiedDate: {type: string}
+  TestList:
+    type: object
+    properties:
+      tests:
+        type: array
+        items: {$ref: "#/definitions/Test"}
+  CreateTestRequest:
+    type: object
+    properties:
+      testName: {type: string}
+      interval: {type: integer, default: 60}
+      url: {type: string}
+      server: {type: string}
+      port: {type: integer}
+      alertsEnabled: {type: boolean, default: true}
+      enabled: {type: boolean, default: true}
+      description: {type: string}
+      agents:
+        type: array
+        items:
+          type: object
+          properties:
+            agentId: {type: string}
+  NetworkResult:
+    type: object
+    properties:
+      roundId: {type: integer}
+      date: {type: string}
+      loss: {type: number}
+      latency: {type: number}
+      jitter: {type: number}
+      avgLatency: {type: number}
+  NetworkResultsResponse:
+    type: object
+    properties:
+      startDate: {type: string}
+      endDate: {type: string}
+      results:
+        type: array
+        items: {$ref: "#/definitions/NetworkResult"}
+  HttpResult:
+    type: object
+    properties:
+      roundId: {type: integer}
+      date: {type: string}
+      availability: {type: number}
+      responseTime: {type: integer}
+      responseCode: {type: integer}
+      totalTime: {type: integer}
+      throughput: {type: integer}
+  HttpResultsResponse:
+    type: object
+    properties:
+      results:
+        type: array
+        items: {$ref: "#/definitions/HttpResult"}
+  Alert:
+    type: object
+    properties:
+      id: {type: string}
+      ruleId: {type: string}
+      ruleName: {type: string}
+      testId: {type: string}
+      testName: {type: string}
+      alertType: {type: string}
+      alertState: {type: string}
+      alertSeverity: {type: string}
+      startDate: {type: string}
+      endDate: {type: string}
+      permalink: {type: string}
+      activeSources: {type: integer}
+      violationCount: {type: integer}
+  AlertList:
+    type: object
+    properties:
+      alerts:
+        type: array
+        items: {$ref: "#/definitions/Alert"}
+  AlertRule:
+    type: object
+    properties:
+      ruleId: {type: string}
+      ruleName: {type: string}
+      expression: {type: string}
+      alertType: {type: string}
+      severity: {type: string}
+      notifyOnClear: {type: boolean}
+      isDefault: {type: boolean}
+  AlertRuleList:
+    type: object
+    properties:
+      alertRules:
+        type: array
+        items: {$ref: "#/definitions/AlertRule"}
+  SuppressionWindow:
+    type: object
+    properties:
+      id: {type: string}
+      name: {type: string}
+      description: {type: string}
+      startDate: {type: string}
+      endDate: {type: string}
+      recurrence: {type: string}
+      enabled: {type: boolean}
+  SuppressionWindowList:
+    type: object
+    properties:
+      alertSuppressionWindows:
+        type: array
+        items: {$ref: "#/definitions/SuppressionWindow"}
+  Dashboard:
+    type: object
+    properties:
+      dashboardId: {type: string}
+      title: {type: string}
+      description: {type: string}
+      isDefaultForUser: {type: boolean}
+      isPrivate: {type: boolean}
+  DashboardList:
+    type: object
+    properties:
+      dashboards:
+        type: array
+        items: {$ref: "#/definitions/Dashboard"}
+  Outage:
+    type: object
+    properties:
+      id: {type: string}
+      outageType: {type: string}
+      providerName: {type: string}
+      applicationName: {type: string}
+      networkName: {type: string}
+      startDate: {type: string}
+      endDate: {type: string}
+  OutagesResponse:
+    type: object
+    properties:
+      networkOutages:
+        type: array
+        items: {$ref: "#/definitions/Outage"}
+      applicationOutages:
+        type: array
+        items: {$ref: "#/definitions/Outage"}
+  UsageResponse:
+    type: object
+    properties:
+      quota:
+        type: object
+        properties:
+          cloudUnitsIncluded: {type: integer}
+          cloudUnitsUsed: {type: integer}
+          enterpriseUnitsIncluded: {type: integer}
+          enterpriseUnitsUsed: {type: integer}
